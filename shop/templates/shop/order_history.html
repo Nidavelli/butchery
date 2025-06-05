@@ -1,0 +1,84 @@
+{% extends 'shop/base.html' %}
+</search>
+{% block title %}Order History | Medaevs {% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <!-- Page Heading -->
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">My Orders</h1>
+  </div>
+  
+  {% if orders %}
+  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+    <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+      {% for order in orders %}
+      <li>
+        <div class="px-4 py-5 sm:px-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-10 w-10 text-accent-500 dark:text-accent-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                  {{ order.product.name }}
+                </h2>
+                <div class="mt-1 flex items-center">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ order.quantity }} kg
+                  </span>
+                  <span class="mx-2 text-gray-400">•</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ order.created_at|date:"F j, Y, g:i a" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div>
+              {% if order.is_delivered %}
+              <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                Delivered
+              </span>
+              {% else %}
+              <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+                Waiting
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          
+          {% if order.product.price %}
+          <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            <p>Total: Ksh {{ order.product.price|floatformat:2 }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <div class="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md p-6 text-center">
+    <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No orders yet</h3>
+    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      You haven't placed any orders yet. Get started by exploring our products.
+    </p>
+  </div>
+  {% endif %}
+  
+  <div class="mt-6">
+    <a href="{% url 'product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500">
+      <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Back to Products
+    </a>
+  </div>
+</div>
+{% endblock %}

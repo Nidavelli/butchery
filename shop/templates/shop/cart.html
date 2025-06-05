@@ -1,0 +1,386 @@
+
+{% extends 'shop/base.html' %}
+
+{% block title %}Shopping Cart | Medaevs{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Page Heading -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Shopping Cart</h1>
+        <a href="{% url 'product_list' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Continue Shopping
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="mb-8">
+        {% for message in messages %}
+        <div class="rounded-md p-4 mb-3 {% if message.tags == 'success' %}bg-green-50 dark:bg-green-900 text-green-800 dark:text-green-200{% elif message.tags == 'error' %}bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-200{% elif message.tags == 'warning' %}bg-yellow-50 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200{% else %}bg-blue-50 dark:bg-blue-900 text-blue-800 dark:text-blue-200{% endif %}">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    {% if message.tags == 'success' %}
+                    <svg class="h-5 w-5 text-green-400 dark:text-green-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    {% elif message.tags == 'error' %}
+                    <svg class="h-5 w-5 text-red-400 dark:text-red-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    {% elif message.tags == 'warning' %}
+                    <svg class="h-5 w-5 text-yellow-400 dark:text-yellow-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    {% else %}
+                    <svg class="h-5 w-5 text-blue-400 dark:text-blue-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                    {% endif %}
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium">{{ message }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not cart_items %}
+    <!-- Empty Cart State -->
+    <div class="text-center py-16 bg-white dark:bg-gray-800 shadow-sm rounded-lg">
+        <svg class="mx-auto h-16 w-16 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">Your cart is empty</h3>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Looks like you haven't added any products to your cart yet.</p>
+        <div class="mt-6">
+            <a href="{% url 'product_list' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500">
+                Start Shopping
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Cart Items -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden mb-8">
+        <!-- Desktop Table Header -->
+        <div class="hidden md:grid md:grid-cols-12 px-6 py-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-700">
+            <div class="md:col-span-6 text-sm font-medium text-gray-500 dark:text-gray-300">Product</div>
+            <div class="md:col-span-2 text-sm font-medium text-gray-500 dark:text-gray-300 text-center">Price</div>
+            <div class="md:col-span-2 text-sm font-medium text-gray-500 dark:text-gray-300 text-center">Quantity</div>
+            <div class="md:col-span-2 text-sm font-medium text-gray-500 dark:text-gray-300 text-right">Subtotal</div>
+        </div>
+
+        <!-- Cart Items -->
+        {% for item in cart_items %}
+        <div class="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+            <!-- Mobile Layout -->
+            <div class="md:hidden p-4">
+                <div class="flex items-center">
+                    <!-- Product Image -->
+                    <div class="flex-shrink-0 w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                        {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <div class="w-full h-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <!-- Product Info -->
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-base font-medium text-gray-900 dark:text-white">{{ item.product.name }}</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Ksh {{ item.product.price }}</p>
+                    </div>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Quantity</p>
+                        <div class="flex items-center">
+                            <button type="button" class="quantity-decrease bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 h-6 w-6 rounded-l flex items-center justify-center cursor-pointer" data-product-id="{{ item.product.id }}">
+                                <span class="text-lg font-thin">−</span>
+                            </button>
+                            <input type="number" class="quantity-input focus:outline-none text-center w-10 bg-gray-100 dark:bg-gray-800 font-semibold text-sm md:text-base text-gray-700 dark:text-gray-300 h-6" name="quantity" value="{{ item.quantity }}" min="1" max="100" data-product-id="{{ item.product.id }}">
+                            <button type="button" class="quantity-increase bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 h-6 w-6 rounded-r flex items-center justify-center cursor-pointer" data-product-id="{{ item.product.id }}">
+                                <span class="text-lg font-thin">+</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Subtotal</p>
+                        <p class="text-sm font-medium text-accent-600 dark:text-accent-400 item-subtotal" data-product-id="{{ item.product.id }}">Ksh {{ item.item_total }}</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="button" class="remove-item-btn inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-product-id="{{ item.product.id }}">
+                        <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove
+                    </button>
+                </div>
+            </div>
+
+            <!-- Desktop Layout -->
+            <div class="hidden md:grid md:grid-cols-12 md:gap-4 md:items-center p-6">
+                <div class="md:col-span-6">
+                    <div class="flex items-center">
+                        <!-- Product Image -->
+                        <div class="flex-shrink-0 w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <!-- Product Info -->
+                        <div class="ml-4">
+                            <h3 class="text-base font-medium text-gray-900 dark:text-white">{{ item.product.name }}</h3>
+                            {% if item.product.description %}
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{{ item.product.description }}</p>
+                            {% endif %}
+                            <button type="button" class="remove-item-btn inline-flex items-center mt-2 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" data-product-id="{{ item.product.id }}">
+                                <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 text-center">
+                    <p class="text-gray-900 dark:text-white">Ksh {{ item.product.price }}</p>
+                </div>
+                <div class="md:col-span-2 text-center">
+                    <div class="flex items-center justify-center">
+                        <button type="button" class="quantity-decrease bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 h-8 w-8 rounded-l flex items-center justify-center cursor-pointer" data-product-id="{{ item.product.id }}">
+                            <span class="text-lg font-thin">−</span>
+                        </button>
+                        <input type="number" class="quantity-input focus:outline-none text-center w-12 bg-gray-100 dark:bg-gray-800 font-semibold text-sm md:text-base text-gray-700 dark:text-gray-300 h-8" name="quantity" value="{{ item.quantity }}" min="1" max="100" data-product-id="{{ item.product.id }}">
+                        <button type="button" class="quantity-increase bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200 h-8 w-8 rounded-r flex items-center justify-center cursor-pointer" data-product-id="{{ item.product.id }}">
+                            <span class="text-lg font-thin">+</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="md:col-span-2 text-right">
+                    <p class="text-accent-600 dark:text-accent-400 font-medium item-subtotal" data-product-id="{{ item.product.id }}">Ksh {{ item.item_total }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Order Summary -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex justify-between items-center">
+                <div class="text-base font-medium text-gray-900 dark:text-white">Total</div>
+                <div class="text-xl font-bold text-accent-600 dark:text-accent-400" id="cart-total">Ksh {{ total_price }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Button -->
+    <div class="flex justify-end mb-8">
+        <a href="{% url 'checkout' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-accent-600 hover:bg-accent-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500">
+            Proceed to Checkout
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all quantity inputs
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        const decreaseButtons = document.querySelectorAll('.quantity-decrease');
+        const increaseButtons = document.querySelectorAll('.quantity-increase');
+        const removeButtons = document.querySelectorAll('.remove-item-btn');
+        
+        // Handle quantity changes
+        function handleQuantityChange(input) {
+            const productId = input.dataset.productId;
+            const quantity = parseInt(input.value);
+            
+            if (quantity < 1) {
+                input.value = 1;
+                return;
+            }
+            
+            // Show loading state
+            const subtotalElements = document.querySelectorAll(`.item-subtotal[data-product-id="${productId}"]`);
+            subtotalElements.forEach(el => {
+                el.innerHTML = '<span class="inline-flex items-center"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Updating...</span>';
+            });
+            
+            // Send AJAX request
+            fetch(`/cart/update/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Update subtotal
+                    subtotalElements.forEach(el => {
+                        el.textContent = `Ksh ${data.item_total}`;
+                    });
+                    
+                    // Update cart total
+                    document.getElementById('cart-total').textContent = `Ksh ${data.total_price}`;
+                    
+                    // Update cart count in navbar
+                    updateCartCount(data.cart_count);
+                    
+                    // Show success notification
+                    showNotification(data.message, 'success');
+                } else {
+                    showNotification(data.message, 'error');
+                    // Reset to previous value
+                    input.value = quantity > 1 ? quantity - 1 : 1;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating quantity:', error);
+                showNotification('An error occurred while updating the cart', 'error');
+                // Reset to previous value
+                input.value = quantity > 1 ? quantity - 1 : 1;
+                // Reset subtotal display
+                subtotalElements.forEach(el => {
+                    el.textContent = el.dataset.originalValue || 'Error';
+                });
+            });
+        }
+        
+        // Add event listeners to quantity inputs
+        quantityInputs.forEach(input => {
+            // Store original value for error recovery
+            const subtotalElements = document.querySelectorAll(`.item-subtotal[data-product-id="${input.dataset.productId}"]`);
+            subtotalElements.forEach(el => {
+                el.dataset.originalValue = el.textContent;
+            });
+            
+            input.addEventListener('change', function() {
+                handleQuantityChange(this);
+            });
+        });
+        
+        // Add event listeners to decrease buttons
+        decreaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                const currentValue = parseInt(input.value);
+                if (currentValue > 1) {
+                    input.value = currentValue - 1;
+                    handleQuantityChange(input);
+                }
+            });
+        });
+        
+        // Add event listeners to increase buttons
+        increaseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const input = document.querySelector(`.quantity-input[data-product-id="${productId}"]`);
+                input.value = parseInt(input.value) + 1;
+                handleQuantityChange(input);
+            });
+        });
+        
+        // Handle remove buttons
+        removeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const productId = this.dataset.productId;
+                const itemRow = this.closest('.border-b');
+                
+                // Show loading state
+                this.innerHTML = '<svg class="animate-spin h-4 w-4 text-accent-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                this.disabled = true;
+                
+                // Send AJAX request
+                fetch(`/cart/remove/${productId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Add fade out animation
+                        itemRow.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                        
+                        // Remove item after animation
+                        setTimeout(() => {
+                            itemRow.remove();
+                            
+                            // If cart is now empty, reload the page to show empty state
+                            if (data.cart_count === 0) {
+                                window.location.reload();
+                            } else {
+                                // Update cart total
+                                fetch('/cart/')
+                                    .then(response => response.text())
+                                    .then(html => {
+                                        const parser = new DOMParser();
+                                        const doc = parser.parseFromString(html, 'text/html');
+                                        const newTotal = doc.getElementById('cart-total').textContent;
+                                        document.getElementById('cart-total').textContent = newTotal;
+                                    });
+                            }
+                        }, 500);
+                        
+                        // Update cart count in navbar
+                        updateCartCount(data.cart_count);
+                        
+                        // Show success notification
+                        showNotification(data.message, 'success');
+                    } else {
+                        // Show error notification
+                        showNotification(data.message, 'error');
+                        // Reset button
+                        this.innerHTML = `
+                            <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Remove
+                        `;
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing item:', error);
+                    showNotification('An error occurred while removing the item', 'error');
+                    // Reset button
+                    this.innerHTML = `
+                        <svg class="h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Remove
+                    `;
+                    this.disabled = false;
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
