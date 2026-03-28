@@ -1,0 +1,221 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Product Details: {{ product.name }}{% endblock %}
+{% block page_description %}View detailed information about {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Product Details</h2>
+                <p class="text-gray-600">{{ product.name }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'dashboard:product_management' %}" 
+                   class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Products
+                </a>
+                <a href="{% url 'dashboard:product_update' product.pk %}" 
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-edit mr-2"></i>Edit Product
+                </a>
+                <a href="{% url 'dashboard:product_delete' product.pk %}" 
+                   class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Delete Product
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Product Information -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Product Information</h3>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Product Image -->
+                        <div>
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                                     class="w-full h-64 object-cover rounded-lg shadow-md">
+                            {% else %}
+                                <div class="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-image text-gray-400 text-6xl"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Product Details -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Product Name</label>
+                                <p class="text-lg font-semibold text-gray-900">{{ product.name }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Category</label>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    {{ product.category.name }}
+                                </span>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Price</label>
+                                <p class="text-2xl font-bold text-green-600">KSh {{ product.price }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Availability</label>
+                                {% if product.available %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check mr-1"></i> Available
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                        <i class="fas fa-times mr-1"></i> Out of Stock
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500">Product ID</label>
+                                <p class="text-gray-900">#{{ product.id }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-500 mb-2">Description</label>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-900">{{ product.description|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics and Recent Orders -->
+        <div class="space-y-6">
+            <!-- Product Statistics -->
+            <div class="bg-white rounded-lg shadow-md">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Statistics</h3>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Total Orders</span>
+                        <span class="text-2xl font-bold text-blue-600">{{ orders.count }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Total Revenue</span>
+                        <span class="text-lg font-semibold text-green-600">
+                            KSh {% widthratio orders.count 1 product.price %}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Status</span>
+                        {% if product.available %}
+                            <span class="text-green-600">Active</span>
+                        {% else %}
+                            <span class="text-red-600">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow-md">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                </div>
+                <div class="p-6 space-y-3">
+                    <a href="{% url 'dashboard:product_update' product.pk %}" 
+                       class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-edit mr-2"></i>Edit Product
+                    </a>
+                    
+                    {% if product.available %}
+                        <button onclick="toggleAvailability(false)" 
+                                class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                            <i class="fas fa-pause mr-2"></i>Mark Unavailable
+                        </button>
+                    {% else %}
+                        <button onclick="toggleAvailability(true)" 
+                                class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                            <i class="fas fa-play mr-2"></i>Mark Available
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'dashboard:product_delete' product.pk %}" 
+                       class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-trash mr-2"></i>Delete Product
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    {% if orders %}
+    <div class="mt-8 bg-white rounded-lg shadow-md">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Recent Orders</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for order in orders %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ order.id }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.user.username }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ order.quantity }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">KSh {{ order.quantity|mul:product.price }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if order.is_delivered %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i> Delivered
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock mr-1"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ order.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleAvailability(available) {
+        if (confirm('Are you sure you want to change the availability of this product?')) {
+            // Here you would make an AJAX call to update the product availability
+            // For now, we'll redirect to the edit page
+            window.location.href = '{% url "dashboard:product_update" product.pk %}';
+        }
+    }
+</script>
+{% endblock %}
+

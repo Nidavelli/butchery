@@ -24,6 +24,7 @@ from shop.views import SignUpView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('', include('shop.urls')),
     
     # Accounts app URLs

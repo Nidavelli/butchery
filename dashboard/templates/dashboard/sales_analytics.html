@@ -1,0 +1,234 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Sales Analytics{% endblock %}
+{% block page_description %}Detailed sales performance and trends{% endblock %}
+
+{% block content %}
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-green-100 text-sm font-medium">Total Orders</p>
+                <p class="text-3xl font-bold">{{ total_orders }}</p>
+            </div>
+            <div class="bg-green-400 bg-opacity-30 rounded-full p-3">
+                <i class="fas fa-shopping-cart text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-blue-100 text-sm font-medium">Delivered Orders</p>
+                <p class="text-3xl font-bold">{{ delivered_orders }}</p>
+            </div>
+            <div class="bg-blue-400 bg-opacity-30 rounded-full p-3">
+                <i class="fas fa-check-circle text-2xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-yellow-100 text-sm font-medium">Pending Orders</p>
+                <p class="text-3xl font-bold">{{ pending_orders }}</p>
+            </div>
+            <div class="bg-yellow-400 bg-opacity-30 rounded-full p-3">
+                <i class="fas fa-clock text-2xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Daily Sales Chart -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Daily Sales (Last 30 Days)</h3>
+        <div class="relative" style="height: 300px;">
+            <canvas id="dailySalesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Order Status Distribution -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Status Distribution</h3>
+        <div class="relative" style="height: 300px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Sales Performance Metrics -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-6">Sales Performance Metrics</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="text-center">
+            <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-percentage text-blue-600 text-xl"></i>
+            </div>
+            {% if total_orders > 0 %}
+                <p class="text-2xl font-bold text-gray-900">{% widthratio delivered_orders total_orders 100 %}%</p>
+            {% else %}
+                <p class="text-2xl font-bold text-gray-900">0%</p>
+            {% endif %}
+            <p class="text-sm text-gray-500">Delivery Rate</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
+            </div>
+            {% if daily_sales %}
+                {% with daily_sales|last as today_sales %}
+                    <p class="text-2xl font-bold text-gray-900">Ksh.{{ today_sales.revenue|default:0|floatformat:2 }}</p>
+                {% endwith %}
+            {% else %}
+                <p class="text-2xl font-bold text-gray-900">Ksh.0.00</p>
+            {% endif %}
+            <p class="text-sm text-gray-500">Today's Revenue</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+            </div>
+            {% if daily_sales %}
+                {% with daily_sales|last as today_sales %}
+                    <p class="text-2xl font-bold text-gray-900">{{ today_sales.orders|default:0 }}</p>
+                {% endwith %}
+            {% else %}
+                <p class="text-2xl font-bold text-gray-900">0</p>
+            {% endif %}
+            <p class="text-sm text-gray-500">Today's Orders</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="bg-orange-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-calculator text-orange-600 text-xl"></i>
+            </div>
+            {% if total_orders > 0 and total_revenue %}
+                <p class="text-2xl font-bold text-gray-900">
+                    Ksh.{% widthratio total_revenue total_orders 1 %}
+                </p>
+            {% else %}
+                <p class="text-2xl font-bold text-gray-900">Ksh.0.00</p>
+            {% endif %}
+            <p class="text-sm text-gray-500">Avg Order Value</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Daily Sales Chart
+const dailySalesData = {{ daily_sales|safe }};
+const salesCtx = document.getElementById('dailySalesChart').getContext('2d');
+new Chart(salesCtx, {
+    type: 'line',
+    data: {
+        labels: dailySalesData.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+            label: 'Revenue (Ksh)',
+            data: dailySalesData.map(item => item.revenue),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.1,
+            fill: true
+        }, {
+            label: 'Orders',
+            data: dailySalesData.map(item => item.orders),
+            borderColor: 'rgb(16, 185, 129)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            tension: 0.1,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        scales: {
+            x: {
+                display: true,
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            },
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Revenue (Ksh)'
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Orders'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            },
+            title: {
+                display: false
+            }
+        }
+    }
+});
+
+// Order Status Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Delivered', 'Pending'],
+        datasets: [{
+            data: [{{ delivered_orders }}, {{ pending_orders }}],
+            backgroundColor: [
+                'rgb(16, 185, 129)',
+                'rgb(245, 158, 11)'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            title: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+

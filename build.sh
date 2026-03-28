@@ -1,0 +1,1 @@
+-e "#!/usr/bin/env bash\npip install -r requirements.txt\npython manage.py collectstatic --noinput\npython manage.py migrate" 

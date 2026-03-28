@@ -1,0 +1,266 @@
+{% extends 'dashboard/base.html' %}
+{% load dashboard_filters %}
+
+{% block page_title %}Order Management{% endblock %}
+{% block page_description %}Track and manage all customer orders{% endblock %}
+
+{% block content %}
+<!-- Filter and Actions Bar -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'dashboard:order_management' %}" 
+           class="px-4 py-2 rounded-lg transition-colors {% if not current_status %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+            All Orders
+        </a>
+        <a href="{% url 'dashboard:order_management' %}?status=pending" 
+           class="px-4 py-2 rounded-lg transition-colors {% if current_status == 'pending' %}bg-yellow-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+            Pending
+        </a>
+        <a href="{% url 'dashboard:order_management' %}?status=delivered" 
+           class="px-4 py-2 rounded-lg transition-colors {% if current_status == 'delivered' %}bg-green-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}">
+            Delivered
+        </a>
+    </div>
+    
+    <div class="flex space-x-2">
+        <input type="text" placeholder="Search orders..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-download mr-2"></i>Export
+        </button>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">
+                {% if current_status == 'pending' %}
+                    Pending Orders
+                {% elif current_status == 'delivered' %}
+                    Delivered Orders
+                {% else %}
+                    All Orders
+                {% endif %}
+            </h3>
+            <span class="text-sm text-gray-500">{{ orders|length }} orders</span>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for order in orders %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" value="{{ order.id }}">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">#{{ order.id }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ order.user.username }}</div>
+                                <div class="text-sm text-gray-500">{{ order.user.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            {% if order.product.image %}
+                                <img class="h-10 w-10 rounded-lg object-cover mr-3" src="{{ order.product.image.url }}" alt="{{ order.product.name }}">
+                            {% else %}
+                                <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center mr-3">
+                                    <i class="fas fa-image text-gray-400"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">{{ order.product.name }}</div>
+                                <div class="text-sm text-gray-500">Ksh.{{ order.product.price }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            {{ order.quantity }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        Ksh.{{ order.quantity|mul:order.product.price|floatformat:2 }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if order.is_delivered %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i> Delivered
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i> Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div>{{ order.created_at|date:"M d, Y" }}</div>
+                        <div class="text-xs text-gray-400">{{ order.created_at|time:"H:i" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            {% if not order.is_delivered %}
+                                <button class="text-green-600 hover:text-green-900 transition-colors" title="Mark as Delivered">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            {% else %}
+                                <button class="text-yellow-600 hover:text-yellow-900 transition-colors" title="Mark as Pending">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            {% endif %}
+                            <button class="text-blue-600 hover:text-blue-900 transition-colors" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900 transition-colors" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900 transition-colors" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="px-6 py-8 text-center">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-shopping-cart text-gray-400 text-6xl mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">No Orders Found</h3>
+                            <p class="text-gray-600">
+                                {% if current_status == 'pending' %}
+                                    No pending orders at the moment.
+                                {% elif current_status == 'delivered' %}
+                                    No delivered orders found.
+                                {% else %}
+                                    No orders have been placed yet.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bulk Actions (shown when orders exist) -->
+{% if orders %}
+<div class="mt-6 bg-white rounded-lg shadow-md p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Bulk Actions</h3>
+    <div class="flex flex-wrap gap-4">
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-check mr-2"></i>Mark Selected as Delivered
+        </button>
+        <button class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-clock mr-2"></i>Mark Selected as Pending
+        </button>
+        <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-trash mr-2"></i>Delete Selected
+        </button>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fas fa-envelope mr-2"></i>Send Notification
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<!-- Order Statistics -->
+<div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white rounded-lg shadow-md p-6 text-center">
+        <div class="text-3xl font-bold text-blue-600 mb-2">{{ orders|length }}</div>
+        <div class="text-sm text-gray-600">
+            {% if current_status == 'pending' %}
+                Pending Orders
+            {% elif current_status == 'delivered' %}
+                Delivered Orders
+            {% else %}
+                Total Orders
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 text-center">
+        <div class="text-3xl font-bold text-green-600 mb-2">
+            Ksh.{% widthratio orders|get_total_revenue 1 1 %}
+        </div>
+        <div class="text-sm text-gray-600">Total Revenue</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 text-center">
+        <div class="text-3xl font-bold text-purple-600 mb-2">
+            {% if orders %}
+                Ksh.{% widthratio orders|get_total_revenue orders|length 1 %}
+            {% else %}
+                Ksh.0
+            {% endif %}
+        </div>
+        <div class="text-sm text-gray-600">Average Order Value</div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 text-center">
+        <div class="text-3xl font-bold text-orange-600 mb-2">
+            {% if orders %}
+                {% widthratio orders|get_avg_quantity 1 1 %}
+            {% else %}
+                0
+            {% endif %}
+        </div>
+        <div class="text-sm text-gray-600">Avg Items per Order</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Select All Checkbox Functionality
+const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
+const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+
+selectAllCheckbox?.addEventListener('change', function() {
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.checked = this.checked;
+    });
+});
+
+// Update select all state when individual checkboxes change
+rowCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const checkedCount = document.querySelectorAll('tbody input[type="checkbox"]:checked').length;
+        selectAllCheckbox.checked = checkedCount === rowCheckboxes.length;
+        selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < rowCheckboxes.length;
+    });
+});
+</script>
+{% endblock %}
+
